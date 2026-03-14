@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: emailplatform
+      POSTGRES_PASSWORD: localdev
+      POSTGRES_DB: emailplatform
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
+  haraka:
+    build:
+      context: ./infrastructure/haraka
+      dockerfile: Dockerfile
+    ports:
+      - "25:25"
+      - "587:587"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - WEBHOOK_URL=http://api:3000/webhooks/haraka
+      - HARAKA_USER=system
+      - HARAKA_PASS=localdev
+    depends_on:
+      - redis
+    volumes:
+      - ./infrastructure/haraka/config:/app/haraka/config
+      - ./infrastructure/haraka/plugins:/app/haraka/plugins
+      - ./infrastructure/haraka/dkim:/app/haraka/dkim
+      - ./infrastructure/haraka/tls:/app/haraka/config/tls
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:

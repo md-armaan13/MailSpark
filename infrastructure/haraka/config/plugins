@@ -1,0 +1,23 @@
+# 1. Encrypt the SMTP connection (built-in)
+tls
+
+# 2. Validate SMTP credentials (custom)
+auth_api
+
+# 3. Log every email event to Redis (custom) — loaded early to capture all lifecycle
+email_logger
+
+# 4. Check per-account sending limits via Redis (custom)
+custom_rate_limit
+
+# 5. Read/strip internal tracking headers (custom)
+add_tracking
+
+# 6. Sign email with sender domain's DKIM key (custom — replaces built-in dkim_sign)
+custom_dkim_sign
+
+# 7. Notify our API when email is delivered (custom)
+delivery_webhook
+
+# 8. Notify our API when email bounces (custom)
+bounce_webhook
