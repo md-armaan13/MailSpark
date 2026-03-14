@@ -18,7 +18,9 @@
 
 const { createClient } = require('redis');
 
-const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
+// In dev, Docker Redis is on 6380 to avoid conflict with local Redis.
+// On VPS (production), it's 6379 as normal.
+const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6380';
 
 async function main() {
   const client = createClient({ url: REDIS_URL });

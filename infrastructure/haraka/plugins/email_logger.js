@@ -78,8 +78,10 @@ exports.hook_queue_ok = function (next, connection) {
 
 // ─── HOOK: Email delivered successfully ─────────────────────
 exports.hook_delivered = function (next, hmail, params) {
-  const uuid = hmail.uuid || 'unknown';
+  // hmail.todo.uuid holds the original inbound transaction UUID
+  const uuid = (hmail.todo && hmail.todo.uuid) || hmail.uuid || 'unknown';
   const recipient = (params && params[0]) ||
+    (hmail.todo && hmail.todo.rcpt_to && hmail.todo.rcpt_to[0] && hmail.todo.rcpt_to[0].original) ||
     (hmail.rcpt_to && hmail.rcpt_to[0] && hmail.rcpt_to[0].original) || 'unknown';
 
   const eventData = {
@@ -94,8 +96,10 @@ exports.hook_delivered = function (next, hmail, params) {
 
 // ─── HOOK: Email bounced ────────────────────────────────────
 exports.hook_bounce = function (next, hmail, error) {
-  const uuid = hmail.uuid || 'unknown';
-  const recipient = (hmail.rcpt_to && hmail.rcpt_to[0] && hmail.rcpt_to[0].original) || 'unknown';
+  const uuid = (hmail.todo && hmail.todo.uuid) || hmail.uuid || 'unknown';
+  const recipient =
+    (hmail.todo && hmail.todo.rcpt_to && hmail.todo.rcpt_to[0] && hmail.todo.rcpt_to[0].original) ||
+    (hmail.rcpt_to && hmail.rcpt_to[0] && hmail.rcpt_to[0].original) || 'unknown';
 
   let dsnCode = '5.0.0';
   let dsnMsg = 'Unknown bounce';
