@@ -11,21 +11,22 @@
  * We only need to implement check_plain_passwd.
  */
 
-const VALID_USER = process.env.HARAKA_USER || 'system';
-const VALID_PASS = process.env.HARAKA_PASS || 'localdev';
-
 exports.register = function () {
   this.inherits('auth/auth_base');
-  this.loginfo(`auth_api registered (user=${VALID_USER}, pass_length=${VALID_PASS.length})`);
+  const user = process.env.HARAKA_USER || 'system';
+  this.loginfo(`auth_api registered (user=${user}, pass_length=${(process.env.HARAKA_PASS || '').length})`);
 };
 
 // auth_base calls this to verify PLAIN and LOGIN credentials
+// NOTE: env vars are read at call time, not module load time,
+// because Haraka workers may not have env vars set during module init.
 exports.check_plain_passwd = function (connection, user, passwd, cb) {
-  const receivedHex = Buffer.from(passwd).toString('hex');
-  const expectedHex = Buffer.from(VALID_PASS).toString('hex');
-  connection.loginfo(this, `Auth attempt: user="${user}" (len=${user.length}), pass received len=${passwd.length} hex=${receivedHex}, expected len=${VALID_PASS.length} hex=${expectedHex}`);
+  const validUser = process.env.HARAKA_USER || 'system';
+  const validPass = process.env.HARAKA_PASS || 'localdev';
 
-  if (user === VALID_USER && passwd === VALID_PASS) {
+  connection.loginfo(this, `Auth attempt: user="${user}", expected="${validUser}", user_match=${user === validUser}, pass_match=${passwd === validPass}`);
+
+  if (user === validUser && passwd === validPass) {
     connection.loginfo(this, `Auth SUCCESS for ${user}`);
     connection.notes.auth_user = user;
     return cb(true);
