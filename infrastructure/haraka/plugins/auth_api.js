@@ -21,7 +21,9 @@ exports.register = function () {
 
 // auth_base calls this to verify PLAIN and LOGIN credentials
 exports.check_plain_passwd = function (connection, user, passwd, cb) {
-  connection.loginfo(this, `Auth attempt: user="${user}", expected="${VALID_USER}", user_match=${user === VALID_USER}, pass_match=${passwd === VALID_PASS}`);
+  const receivedHex = Buffer.from(passwd).toString('hex');
+  const expectedHex = Buffer.from(VALID_PASS).toString('hex');
+  connection.loginfo(this, `Auth attempt: user="${user}" (len=${user.length}), pass received len=${passwd.length} hex=${receivedHex}, expected len=${VALID_PASS.length} hex=${expectedHex}`);
 
   if (user === VALID_USER && passwd === VALID_PASS) {
     connection.loginfo(this, `Auth SUCCESS for ${user}`);
