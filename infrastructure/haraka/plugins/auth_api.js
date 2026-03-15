@@ -1,49 +1,34 @@
 'use strict';
 
 /**
- * auth_api plugin — Authenticates SMTP users against env-based credentials.
+ * auth_api plugin — SMTP AUTH handler using auth_base.
  *
- * Inherits from Haraka's built-in auth/auth_base which:
- *   1. Advertises AUTH PLAIN LOGIN CRAM-MD5 in EHLO capabilities
- *   2. Handles the AUTH command via hook_unrecognized_command
- *   3. Calls our get_plain_passwd() to verify credentials
+ * Inherits from auth/auth_base which handles:
+ *   - Advertising AUTH methods in EHLO
+ *   - Parsing AUTH PLAIN and AUTH LOGIN exchanges
+ *   - Calling check_plain_passwd for credential verification
  *
- * In production, you would replace the env-based lookup with an API call
- * to your user database to support multi-tenant authentication.
+ * We only need to implement check_plain_passwd.
  */
+
+const VALID_USER = process.env.HARAKA_USER || 'system';
+const VALID_PASS = process.env.HARAKA_PASS || 'localdev';
 
 exports.register = function () {
   this.inherits('auth/auth_base');
-  this.loginfo('auth_api plugin registered (inherits auth_base)');
-
-  // Only offer PLAIN and LOGIN (not CRAM-MD5) to avoid HMAC issues
-  this.hook_capabilities = function (next, connection) {
-    if (!connection.tls.enabled) return next();
-    const methods = ['PLAIN', 'LOGIN'];
-    connection.capabilities.push('AUTH ' + methods.join(' '));
-    connection.notes.allowed_auth_methods = methods;
-    next();
-  };
+  this.loginfo(`auth_api registered (user=${VALID_USER}, pass_length=${VALID_PASS.length})`);
 };
 
-/**
- * Called by auth_base when a user attempts PLAIN or LOGIN authentication.
- * We return the expected password — auth_base compares it to what the user sent.
- *
- * @param {string}   user       - The SMTP username
- * @param {object}   connection - The Haraka connection object
- * @param {function} cb         - Callback: cb(password) or cb(null) to reject
- */
-exports.get_plain_passwd = function (user, connection, cb) {
-  const validUser = process.env.HARAKA_USER || 'system';
-  const validPass = process.env.HARAKA_PASS || 'localdev';
+// auth_base calls this to verify PLAIN and LOGIN credentials
+exports.check_plain_passwd = function (connection, user, passwd, cb) {
+  connection.loginfo(this, `Auth attempt: user="${user}", expected="${VALID_USER}", user_match=${user === VALID_USER}, pass_match=${passwd === VALID_PASS}`);
 
-  if (user === validUser) {
-    connection.loginfo(this, `Auth lookup for user: ${user}`);
+  if (user === VALID_USER && passwd === VALID_PASS) {
+    connection.loginfo(this, `Auth SUCCESS for ${user}`);
     connection.notes.auth_user = user;
-    return cb(validPass);
+    return cb(true);
   }
 
-  connection.logwarn(this, `Auth rejected unknown user: ${user}`);
-  return cb(null);
+  connection.logwarn(this, `Auth FAILED for ${user}`);
+  return cb(false);
 };
