@@ -15,6 +15,15 @@
 exports.register = function () {
   this.inherits('auth/auth_base');
   this.loginfo('auth_api plugin registered (inherits auth_base)');
+
+  // Only offer PLAIN and LOGIN (not CRAM-MD5) to avoid HMAC issues
+  this.hook_capabilities = function (next, connection) {
+    if (!connection.tls.enabled) return next();
+    const methods = ['PLAIN', 'LOGIN'];
+    connection.capabilities.push('AUTH ' + methods.join(' '));
+    connection.notes.allowed_auth_methods = methods;
+    next();
+  };
 };
 
 /**
