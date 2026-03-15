@@ -24,7 +24,7 @@ exports.check_plain_passwd = function (connection, user, passwd, cb) {
   const validUser = process.env.HARAKA_USER || 'system';
   const validPass = process.env.HARAKA_PASS || 'localdev';
 
-  connection.loginfo(this, `Auth attempt: user="${user}", expected="${validUser}", user_match=${user === validUser}, pass_match=${passwd === validPass}`);
+  connection.loginfo(this, `Auth attempt: user="${user}", user_match=${user === validUser}, pass_match=${passwd === validPass}`);
 
   if (user === validUser && passwd === validPass) {
     connection.loginfo(this, `Auth SUCCESS for ${user}`);
