@@ -9,10 +9,9 @@ dist
 
 # Environment
 .env
-.env
 .env.local
+.env.production
 .env.*.local
-.env*
 
 # IDE
 .idea
@@ -34,5 +33,5 @@ coverage
 # Haraka
 infrastructure/haraka/queue
 infrastructure/haraka/logs
-infrastructure/haraka/dkim/*.pem
-infrastructure/haraka/tls/
+infrastructure/haraka/dkim/**/*.pem
+infrastructure/haraka/tls/*.pem

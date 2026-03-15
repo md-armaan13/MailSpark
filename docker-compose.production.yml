@@ -2,9 +2,10 @@ services:
   postgres:
     image: postgres:15-alpine
     restart: unless-stopped
+    env_file: .env
     environment:
       POSTGRES_USER: emailplatform
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-zP7RFfjm6RHFBSggzUZXuKkk}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: emailplatform
     ports:
       - "127.0.0.1:5432:5432"
@@ -22,10 +23,11 @@ services:
   minio:
     image: minio/minio
     restart: unless-stopped
+    env_file: .env
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-wYGlITDvghKpY4T2}
-      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-U2qFOd9A2FEh3u8uCtCBoOAZ}
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
     ports:
       - "127.0.0.1:9000:9000"
       - "127.0.0.1:9001:9001"
@@ -37,14 +39,14 @@ services:
       context: ./infrastructure/haraka
       dockerfile: Dockerfile
     restart: unless-stopped
+    env_file: .env
     ports:
       - "25:25"
       - "587:587"
     environment:
+      # Override: inside Docker, use container names not localhost
       - REDIS_URL=redis://redis:6379
       - WEBHOOK_URL=http://api:3000/webhooks/haraka
-      - HARAKA_USER=${HARAKA_USER:-system}
-      - HARAKA_PASS=${HARAKA_PASS:-hLuVRZahH82mWdHp}
     depends_on:
       - redis
     volumes:
