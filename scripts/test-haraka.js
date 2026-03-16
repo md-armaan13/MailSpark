@@ -16,10 +16,10 @@
 
 const nodemailer = require('nodemailer');
 
-const HARAKA_HOST = process.env.HARAKA_HOST || 'localhost';
+const HARAKA_HOST = process.env.HARAKA_HOST;
 const HARAKA_PORT = parseInt(process.env.HARAKA_PORT || '587', 10);
-const HARAKA_USER = process.env.HARAKA_USER || 'system';
-const HARAKA_PASS = process.env.HARAKA_PASS || 'localdev';
+const HARAKA_USER = process.env.HARAKA_USER;
+const HARAKA_PASS = process.env.HARAKA_PASS;
 
 const recipient = process.argv[2];
 
